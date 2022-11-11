@@ -1,0 +1,22 @@
+{%extends "layout.html"%}
+{%block body%}
+<div class="container">
+    <div class="my-5">
+        <form action="/home" method="POST">
+            <input name="title" type="text">
+            <input type="submit" value="add todo">
+        </form>
+    </div>
+
+    <div>
+        {% for todo in data %}
+        <div>
+            <h1>{{todo.id}} -- {{todo.title}}</h1>
+            <a href="/remove/{{todo.id}}" class="btn btn-danger">Delete</a>
+            <a href="/update/{{todo.id}}" class="btn btn-primary">Update</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock%}
