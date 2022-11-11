@@ -1,49 +1,57 @@
 from flask import Flask,render_template,request,redirect
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app= Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///app.db'
+app.config['SECRET_KEY']='a9003e534d94472d88dd294b2f126bb3'
+SQLAlCHEMY_TRACK_MODIFICATIONS= True
+db= SQLAlchemy(app)
+migrate= Migrate(app,db)
 
-allTodosData=[{"id":1,"title": "Test todos 1"},
-         {"id":2,"title": "Test todos 2"},
-         {"id":3,"title": "Test todos 3"},
-         {"id":4,"title": "Test todos 4"}]
+class ToDo(db.Model):
+    id= db.Column(db.Integer,primary_key=True)
+    title=db.Column(db.String(200))
 
 @app.route("/")
 @app.route("/home",methods=["GET","POST"])
 def home():
     if request.method=="POST":
-        title=request.form["title"]
-        new_todo={"id":len(allTodosData)+1,"title": title+f" {len(allTodosData) + 1}"}
-        allTodosData.append(new_todo)
+        title= request.form["title"]
+        todo= ToDo(title=title)
+        db.session.add(todo)
+        db.session.commit()
+        return redirect('/')
+    dataAll= ToDo.query.all()
+    return render_template("index.html",data=dataAll)
 
-    return render_template("index.html",data=allTodosData)
 
 @app.route("/remove/<int:todoid>")
 def removeTodo(todoid):
-    for todo in allTodosData:
-        if todo["id"]==todoid:
-            allTodosData.remove(todo)
+    todo= db.session.query(ToDo).filter_by(id=todoid).first()
+    db.session.delete(todo)
+    db.session.commit()
     return redirect("/")
+
 
 @app.route("/update/<int:todoid>")
 def updateTodo(todoid):
-    for mTodo in allTodosData:
-        if mTodo["id"]==todoid:
-            return render_template('update.html',todo=mTodo)
-    return redirect('/')
-
+    todos = db.session.query(ToDo).filter_by(id=todoid).first()
+    return render_template('update.html', todo=todos)
 @app.route("/updatetodo", methods=["POST"])
 def update():
     title = request.form['title']
     id= request.form['id']
-    for mTodo in allTodosData:
-        if mTodo['id']==int(id):
-            mTodo['title']=title
-            return redirect('/')
-    return "ERROR"
+    todos = db.session.query(ToDo).filter_by(id=id).first()
+    todos.title=title
+    db.session.commit()
+    return redirect("/")
+
 
 @app.route("/about")
 def about():
     return render_template("about.html")
+
 
 @app.route("/contact")
 def contact():
