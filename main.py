@@ -26,18 +26,18 @@ def removeTodo(todoid):
 
 @app.route("/update/<int:todoid>")
 def updateTodo(todoid):
-    for todo in allTodosData:
-        if todo["id"]==todoid:
-            return render_template('update.html',todo=todo)
+    for mTodo in allTodosData:
+        if mTodo["id"]==todoid:
+            return render_template('update.html',todo=mTodo)
     return redirect('/')
 
 @app.route("/updatetodo", methods=["POST"])
 def update():
     title = request.form['title']
     id= request.form['id']
-    for todo in allTodosData:
-        if todo['id']==int(id):
-            todo['title']=title
+    for mTodo in allTodosData:
+        if mTodo['id']==int(id):
+            mTodo['title']=title
             return redirect('/')
     return "ERROR"
 
